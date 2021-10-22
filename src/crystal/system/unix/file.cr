@@ -32,7 +32,11 @@ module Crystal::System::File
     if follow_symlinks
       ret = LibC.stat(path.check_no_null_byte, pointerof(stat))
     else
-      ret = LibC.lstat(path.check_no_null_byte, pointerof(stat))
+      {% if LibC.has_method?(:__lxstat) %}
+        ret = LibC.__lxstat(1, path.check_no_null_byte, pointerof(stat))
+      {% else %}
+        ret = LibC.lstat(path.check_no_null_byte, pointerof(stat))
+      {% end %}
     end
 
     if ret == 0
